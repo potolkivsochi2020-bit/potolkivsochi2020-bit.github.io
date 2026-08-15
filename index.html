@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>StudioXDesign — обзвон студий</title>
+<style>
+  :root{
+    --bg-0:#f6f8fc;
+    --bg-1:#eef1f8;
+    --card:#ffffff;
+    --card-border:#e6e9f2;
+    --ink:#161a2b;
+    --ink-soft:#6b7086;
+    --ink-faint:#9aa0b4;
+    --accent-1:#5b6bf0;
+    --accent-2:#22c9dd;
+    --accent-grad:linear-gradient(135deg,var(--accent-1),var(--accent-2));
+    --good:#1fb37a;
+    --good-bg:#e7f8f1;
+    --ring-track:#e6e9f5;
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:10px;
+    --shadow-card:0 1px 2px rgba(20,24,50,.04), 0 8px 24px -12px rgba(20,24,50,.12);
+    --shadow-pop:0 20px 60px -20px rgba(20,24,50,.35);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 100% -10%, #eaf3ff 0%, transparent 60%),
+      radial-gradient(900px 500px at -10% 0%, #eef0ff 0%, transparent 55%),
+      var(--bg-0);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding-bottom:48px;
+  }
+
+  a{color:inherit;}
+
+  /* ---------- Header ---------- */
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:20;
+    backdrop-filter:blur(14px) saturate(1.4);
+    -webkit-backdrop-filter:blur(14px) saturate(1.4);
+    background:rgba(246,248,252,.82);
+    border-bottom:1px solid rgba(20,24,50,.06);
+    padding:14px 16px 12px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .brand-text h1{
+    margin:0;
+    font-size:15px;
+    font-weight:800;
+    letter-spacing:.2px;
+  }
+  .brand-text p{
+    margin:2px 0 0;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+
+  .ring-wrap{
+    position:relative;
+    width:52px;
+    height:52px;
+    flex:0 0 auto;
+  }
+  .ring-wrap svg{transform:rotate(-90deg);}
+  .ring-bg{fill:none;stroke:var(--ring-track);stroke-width:5;}
+  .ring-fg{fill:none;stroke-width:5;stroke-linecap:round;transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1);}
+  .ring-num{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    font-size:12px;font-weight:800;
+  }
+
+  .search-row{
+    display:flex;
+    gap:8px;
+    margin-top:12px;
+  }
+  .search-input{
+    flex:1;
+    min-width:0;
+    border:1px solid var(--card-border);
+    background:var(--card);
+    border-radius:var(--radius-sm);
+    padding:10px 12px;
+    font-size:14px;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s, box-shadow .15s;
+  }
+  .search-input:focus{
+    border-color:var(--accent-1);
+    box-shadow:0 0 0 3px rgba(91,107,240,.14);
+  }
+
+  .filter-pills{
+    display:flex;
+    gap:6px;
+    margin-top:10px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .filter-pills::-webkit-scrollbar{display:none;}
+  .pill{
+    flex:0 0 auto;
+    font-size:12.5px;
+    font-weight:600;
+    padding:7px 13px;
+    border-radius:999px;
+    border:1px solid var(--card-border);
+    background:var(--card);
+    color:var(--ink-soft);
+    cursor:pointer;
+    white-space:nowrap;
+    transition:all .15s;
+  }
+  .pill.active{
+    background:var(--accent-grad);
+    border-color:transparent;
+    color:#fff;
+  }
+
+  /* ---------- List ---------- */
+  .list{
+    max-width:640px;
+    margin:14px auto 0;
+    padding:0 12px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+
+  .empty-state{
+    text-align:center;
+    color:var(--ink-faint);
+    font-size:13.5px;
+    padding:60px 20px;
+  }
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--card-border);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-card);
+    padding:14px 14px 12px;
+    transition:box-shadow .2s, border-color .2s;
+  }
+  .card.done{
+    border-color:rgba(31,179,122,.35);
+  }
+
+  .card-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .card-id{
+    font-size:10.5px;
+    font-weight:800;
+    color:var(--ink-faint);
+    letter-spacing:.4px;
+    margin-bottom:2px;
+  }
+  .card-name{
+    font-size:15px;
+    font-weight:750;
+    line-height:1.28;
+    letter-spacing:.1px;
+  }
+  .card-site{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    margin-top:4px;
+    font-size:12.5px;
+    color:var(--accent-1);
+    text-decoration:none;
+    font-weight:600;
+    word-break:break-all;
+  }
+  .card-site svg{flex:0 0 auto;}
+
+  /* checkbox */
+  .check-btn{
+    flex:0 0 auto;
+    width:30px;height:30px;
+    border-radius:9px;
+    border:1.6px solid var(--card-border);
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    transition:all .15s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .check-btn svg{opacity:0;transform:scale(.5);transition:all .18s;}
+  .check-btn.checked{
+    background:var(--accent-grad);
+    border-color:transparent;
+  }
+  .check-btn.checked svg{opacity:1;transform:scale(1);}
+
+  .divider{
+    height:1px;
+    background:var(--card-border);
+    margin:12px 0 11px;
+  }
+
+  .field-label{
+    font-size:11px;
+    font-weight:700;
+    color:var(--ink-faint);
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    margin-bottom:5px;
+    display:block;
+  }
+
+  .field-row{
+    display:flex;
+    gap:7px;
+    margin-bottom:9px;
+  }
+  .field-input{
+    flex:1;
+    min-width:0;
+    border:1px solid var(--card-border);
+    background:var(--bg-1);
+    border-radius:var(--radius-sm);
+    padding:9px 11px;
+    font-size:13.5px;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s, background .15s;
+  }
+  .field-input::placeholder{color:var(--ink-faint);}
+  .field-input:focus{
+    border-color:var(--accent-1);
+    background:#fff;
+  }
+  .go-btn{
+    flex:0 0 auto;
+    width:38px;
+    border-radius:var(--radius-sm);
+    border:1px solid var(--card-border);
+    background:#fff;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    color:var(--ink-soft);
+    transition:all .15s;
+  }
+  .go-btn.enabled{
+    color:var(--accent-1);
+    border-color:rgba(91,107,240,.35);
+  }
+  .go-btn:disabled{opacity:.4;cursor:not-allowed;}
+  .go-btn.call-btn.enabled{
+    color:#fff;
+    background:var(--good);
+    border-color:transparent;
+  }
+
+  .save-row{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:10px;
+    margin-top:4px;
+  }
+  .save-hint{
+    font-size:12px;
+    color:var(--good);
+    font-weight:700;
+    opacity:0;
+    transform:translateY(2px);
+    transition:all .2s;
+  }
+  .save-hint.show{opacity:1;transform:translateY(0);}
+  .save-btn{
+    border:none;
+    background:var(--accent-grad);
+    color:#fff;
+    font-size:13px;
+    font-weight:700;
+    padding:9px 16px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:transform .12s, opacity .12s;
+  }
+  .save-btn:active{transform:scale(.96);}
+  .save-btn:disabled{opacity:.55;cursor:default;}
+
+  .comment-open{
+    width:100%;
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    background:var(--bg-1);
+    border:1px solid var(--card-border);
+    border-radius:var(--radius-sm);
+    padding:11px 11px;
+    cursor:pointer;
+    text-align:left;
+    font:inherit;
+    color:var(--ink);
+    margin-top:2px;
+  }
+  .comment-icon{
+    flex:0 0 auto;
+    width:26px;height:26px;
+    border-radius:8px;
+    background:#fff;
+    border:1px solid var(--card-border);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-soft);
+    margin-top:1px;
+  }
+  .comment-icon.has{
+    background:var(--good-bg);
+    border-color:transparent;
+    color:var(--good);
+  }
+  .comment-preview{
+    flex:1;
+    min-width:0;
+    font-size:13px;
+    line-height:1.45;
+    color:var(--ink);
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+  .comment-preview.empty{color:var(--ink-faint);}
+  .comment-chevron{flex:0 0 auto;color:var(--ink-faint);margin-top:3px;}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,17,32,.44);
+    backdrop-filter:blur(3px);
+    -webkit-backdrop-filter:blur(3px);
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:100;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .22s;
+  }
+  .modal-overlay.open{opacity:1;pointer-events:auto;}
+  .modal-sheet{
+    width:100%;
+    max-width:640px;
+    background:#fff;
+    border-radius:22px 22px 0 0;
+    padding:8px 18px 22px;
+    box-shadow:var(--shadow-pop);
+    transform:translateY(24px);
+    transition:transform .26s cubic-bezier(.2,.8,.2,1);
+    max-height:80vh;
+    display:flex;
+    flex-direction:column;
+  }
+  .modal-overlay.open .modal-sheet{transform:translateY(0);}
+  .modal-grip{
+    width:36px;height:4px;
+    border-radius:99px;
+    background:var(--card-border);
+    margin:8px auto 14px;
+  }
+  .modal-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .modal-title{
+    font-size:15px;
+    font-weight:800;
+  }
+  .modal-sub{
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .modal-close{
+    flex:0 0 auto;
+    width:30px;height:30px;
+    border-radius:9px;
+    border:1px solid var(--card-border);
+    background:var(--bg-1);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .modal-textarea{
+    width:100%;
+    flex:1;
+    min-height:140px;
+    border:1px solid var(--card-border);
+    background:var(--bg-1);
+    border-radius:var(--radius-md);
+    padding:12px 13px;
+    font-size:14.5px;
+    line-height:1.5;
+    font-family:inherit;
+    color:var(--ink);
+    outline:none;
+    resize:vertical;
+    transition:border-color .15s, background .15s;
+  }
+  .modal-textarea:focus{border-color:var(--accent-1);background:#fff;}
+  .modal-foot{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:14px;
+  }
+  .modal-status{
+    font-size:12px;
+    color:var(--good);
+    font-weight:700;
+    opacity:0;
+    transition:opacity .2s;
+  }
+  .modal-status.show{opacity:1;}
+  .modal-save{
+    border:none;
+    background:var(--accent-grad);
+    color:#fff;
+    font-size:14px;
+    font-weight:750;
+    padding:12px 22px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:0 10px 24px -10px rgba(91,107,240,.55);
+    transition:transform .12s;
+  }
+  .modal-save:active{transform:scale(.97);}
+
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:20px;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);
+    color:#fff;
+    font-size:13px;
+    font-weight:600;
+    padding:11px 18px;
+    border-radius:999px;
+    z-index:200;
+    opacity:0;
+    pointer-events:none;
+    transition:all .25s cubic-bezier(.2,.8,.2,1);
+    box-shadow:0 14px 30px -10px rgba(0,0,0,.4);
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .storage-banner{
+    display:none;
+    max-width:640px;
+    margin:12px auto 0;
+    padding:0 12px;
+  }
+  .storage-banner.show{display:block;}
+  .storage-banner-inner{
+    background:#fff4e8;
+    border:1px solid #f3d9b6;
+    color:#8a5a12;
+    border-radius:var(--radius-md);
+    padding:12px 14px;
+    font-size:13px;
+    line-height:1.5;
+    font-weight:600;
+  }
+  .test-btn{
+    margin-top:8px;
+    border:1px solid #f3d9b6;
+    background:#fff;
+    color:#8a5a12;
+    font-size:12px;
+    font-weight:700;
+    padding:7px 12px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+
+  .loading-wrap{
+    text-align:center;
+    padding:80px 20px;
+    color:var(--ink-faint);
+    font-size:13.5px;
+  }
+  .spinner{
+    width:26px;height:26px;
+    border-radius:50%;
+    border:3px solid var(--ring-track);
+    border-top-color:var(--accent-1);
+    margin:0 auto 12px;
+    animation:spin .8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-text">
+      <h1>StudioXDesign · обзвон студий</h1>
+      <p id="subtitleText">Загрузка…</p>
+    </div>
+    <div class="ring-wrap">
+      <svg width="52" height="52" viewBox="0 0 52 52">
+        <circle class="ring-bg" cx="26" cy="26" r="22"></circle>
+        <circle class="ring-fg" id="ringFg" cx="26" cy="26" r="22" stroke="url(#gradRing)"></circle>
+        <defs>
+          <linearGradient id="gradRing" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#5b6bf0"/>
+            <stop offset="1" stop-color="#22c9dd"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <div class="ring-num" id="ringNum">0%</div>
+    </div>
+  </div>
+
+  <div class="search-row">
+    <input class="search-input" id="searchInput" type="text" placeholder="Поиск по названию…" autocomplete="off">
+  </div>
+  <div class="filter-pills">
+    <button class="pill active" data-filter="all">Все 100</button>
+    <button class="pill" data-filter="pending">Осталось</button>
+    <button class="pill" data-filter="done">Обзвонено</button>
+  </div>
+  <button class="test-btn" id="reportBtn" style="margin-top:10px;">📤 Отправить отчёт руководителю</button>
+</div>
+
+<div class="list" id="list">
+  <div class="loading-wrap"><div class="spinner"></div>Загружаю список…</div>
+</div>
+
+
+    </div>
+  </div>
+
+  <div class="search-row">
+    <input class="search-input" id="searchInput" type="text" placeholder="Поиск по названию…" autocomplete="off">
+  </div>
+  <div class="filter-pills">
+    <button class="pill active" data-filter="all">Все 100</button>
+    <button class="pill" data-filter="pending">Осталось</button>
+    <button class="pill" data-filter="done">Обзвонено</button>
+  </div>
+  <button class="test-btn" id="reportBtn" style="margin-top:10px;">📤 Отправить отчёт руководителю</button>
+</div>
+
+<div class="list" id="list">
+  <div class="loading-wrap"><div class="spinner"></div>Загружаю список…</div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-sheet">
+    <div class="modal-grip"></div>
+    <div class="modal-head">
+      <div>
+        <div class="modal-title">Комментарий</div>
+        <div class="modal-sub" id="modalSub"></div>
+      </div>
+      <button class="modal-close" id="modalClose" aria-label="Закрыть">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <textarea class="modal-textarea" id="modalTextarea" placeholder="Например: «интересно, ждём чертёж», «перезвонить в пятницу», «отказ — уже есть подрядчик»…"></textarea>
+    <div class="modal-foot">
+      <div class="modal-status" id="modalStatus">Сохранено ✓</div>
+      <button class="modal-save" id="modalSave">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Сохранено</div>
+
+<script>
+(function(){
+
+  // ---------------- Data ----------------
+  var STUDIOS = [
+["ARTUM","artum.studio"],["IMETRA","imetra.ru"],["LA.BURO","la-buro.ru"],["L.DESIGN STUDIO","ldesign.studio"],
+["Kontrast Design","kontrastdesign.ru"],["Heshi Design","heshi.ru"],["CÉLE ATELIER","celeatelier.ru"],["TB.Design","tbdesign.pro"],
+["NEFA Architects","nefa-architects.ru"],["BURO 1","buro-one.ru"],["Geometrium","geometrium.com"],["GASTELLO Design","gastello-design.ru"],
+["ON Design","o-n-design.com"],["Kira Toporkova design","toporkovadesign.ru"],["Zorina Design","zorinadesign.com"],["Archbutik","archbutik.ru"],
+["LEO COMPANY","designleo.ru"],["ALL IN .TERIOR","allin-terior.ru"],["L.I.S.T INTERIOR DESIGN STUDIO","studiodesignlist.ru"],["Goldman Design","goldmandesign.ru"],
+["Art-Buro 1/1","artburo21.ru"],["ARXY","arxy.ru"],["Want Architect","wantarchitect.ru"],["Design Decision","ddstudio.pro"],
+["PRO Interior Design (PROID)","proid.studio"],["SIA","sia88.ru"],["Brovkin Design","brovkindesign.com"],["Style Home","studiosh.ru"],
+["ГК Фундамент","remont-f.ru"],["Coolagin.Design","coolagin.design"],["Best","bestdizain.com"],["Tashimi","tashimi.ru"],
+["Alina Salomatina Interiors","salomatina.design"],["ADM studio","adm-archstudio.ru"],["K.I.Design","kidesign.ru"],["Design Project","designproject.su"],
+["Create4Home","create4home.com"],["Arch Detali","archdetali.ru"],["New Life studio","designinterior.moscow"],["L-Project","l-project.ru"],
+["BALCON","balcon.studio"],["UNO STUDIO","uno-studio.design"],["PS INTERIOR","ps-interior.ru"],["Ai Arch Buro","ai-arch-buro.ru"],
+["Domoff Interiors","domoff-interiors.com"],["Predmet","arch-predmet.ru"],["Design Rocks","designrocks.ru"],["Osnova","osnovadesign.ru"],
+["Дизайн по карману","designpokarmanu.ru"],["KASHUBA DESIGN","kashubadesign.ru"],["АС Бюро","a-s-buro.ru"],["BŪRO (buroarc)","buroarc.ru"],
+["Studio 40","archstudio40.ru"],["A&P ARH STUDIO PROJECTS","studio-arh.ru"],["TENZO","tenzo-buro.ru"],["DesartDecor","desartdecor.ru"],
+["Polyakova Design","polyakovadesign.com"],["ignatenko.design","ignatenko.design"],["DUO","duo.ru"],["Архитектурное бюро «Парижские интерьеры»","interior-design.moscow"],
+["DSEESION","dseesion.ru"],["Victoria Vlasova Interiors","victoriavlasova.ru"],["Andrei Lobin Design Buro","lobin.design"],["BELLARDO","bellardo.ru"],
+["ALTER EGO Project Group","alterego-group.com"],["RUBLEVA Design & Architecture","rubleva-design.ru"],["background studio","background-studio.ru"],["Archidica","archidica.com"],
+["Дизайн-бюро Архи-Тек","architeque.ru"],["Юдин и Новиков","design-un.ru"],["Архитектурная студия Бориса Костырина (Studio BK)","studio-bk.ru"],["Project Buro","projectburo.ru"],
+["Точка Дизайна (Tochka Design)","tochka-design.ru"],["Студия архитектуры и дизайна Марии Боровской (MBDS)","mb-ds.ru"],["Печёный","pechenyi.com"],["Root Box","root-box.ru"],
+["DECART Design","decartdesign.ru"],["Luxe Design","luxe-design.ru"],["Svoi Design","svoi-design.com"],["BRITISH DESIGN STUDIO","dizayn.studio"],
+["Babayants Architects","en.artbabayants.com"],["Oleg Klodt | Architecture & Design","olegklodt.com"],["S+S (Sundukovy Sisters)","sundukovy.com"],["FORM Bureau","formbureau.co.uk"],
+["Wowhaus","wowhaus.org"],["UNK interiors","unkinteriors.com"],["ARCHPOINT","archpoint.studio"],["Kleinewelt Architekten","kleinewelt.ru"],
+["Architectural Bureau A4","a4arch.ru"],["Tsimailo Lyashenko and Partners (TLP)","tlp-ab.ru"],["VPROEKTE","vproekte.com"],["Studia 54","studia-54.com"],
+["Hot Walls","hot-walls.ru"],["Fedorova Architects","fedorova.ru"],["Shelnat","shelnat.com"],["Дизайн-бюро №11","buro11.ru"],
+["Уютная квартира","ukvartira.ru"],["Marso Studio","marsostudio.com"],["Simple Studio","simple-studio.ru"],["N-cube","nncube.ru"]
+  ];
+
+  var STORAGE_INDEX_KEY = "sxd-call-list-v3";
+  var TG_PREFIX = "https://t.me/";
+  var state = {}; // { "1": {called:false, instagram:"", messenger:"", comment:""} }
+  var currentFilter = "all";
+  var currentSearch = "";
+  var activeModalId = null;
+
+  function emptyEntry(){ return { called:false, designerName:"", phone:"", instagram:"", messenger:"", comment:"" }; }
+  function getEntry(id){ return state[id] || emptyEntry(); }
+
+  // ---------------- Storage (localStorage — работает на любом телефоне) ----------------
+  function loadState(){
+    state = {};
+    try{
+      var raw = localStorage.getItem(STORAGE_INDEX_KEY);
+      if(raw) state = JSON.parse(raw);
+    }catch(e){ state = {}; }
+    return Promise.resolve();
+  }
+
+  function saveEntry(id, patch){
+    return new Promise(function(resolve, reject){
+      try{
+        var entry = Object.assign(emptyEntry(), state[id] || {}, patch);
+        state[id] = entry;
+        localStorage.setItem(STORAGE_INDEX_KEY, JSON.stringify(state));
+        resolve(entry);
+      }catch(e){ reject(e); }
+    });
+  }
+
+  // ---------------- Render ----------------
+  var listEl = document.getElementById('list');
+  var subtitleEl = document.getElementById('subtitleText');
+  var ringFg = document.getElementById('ringFg');
+  var ringNum = document.getElementById('ringNum');
+  var RADIUS = 22, CIRC = 2*Math.PI*RADIUS;
+  ringFg.style.strokeDasharray = CIRC.toFixed(1);
+  ringFg.style.strokeDashoffset = CIRC.toFixed(1);
+
+  function updateProgress(){
+    var total = STUDIOS.length;
+    var done = 0;
+    for(var i=1;i<=total;i++){ if(getEntry(i).called) done++; }
+    var pct = total ? done/total : 0;
+    ringFg.style.strokeDashoffset = (CIRC*(1-pct)).toFixed(1);
+    ringNum.textContent = Math.round(pct*100)+'%';
+    subtitleEl.textContent = done + ' из ' + total + ' обзвонено';
+  }
+
+  function iconChevron(){
+    return '<svg class="comment-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3L11 8L6 13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function iconCheck(){
+    return '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2.5 7.5L6 11L12.5 3.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function iconChat(){
+    return '<svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M2 3.5C2 2.67 2.67 2 3.5 2H12.5C13.33 2 14 2.67 14 3.5V9.5C14 10.33 13.33 11 12.5 11H6L3 13.5V11H3.5C2.67 11 2 10.33 2 9.5V3.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+  }
+  function iconGo(){
+    return '<svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M6 4L11 8L6 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+  function iconPhone(){
+    return '<svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3.2 2H5.6L6.8 5L5.2 6.2C5.8 7.6 6.9 8.9 8.4 9.6L9.6 8L12.6 9.2V11.6C12.6 12.3 12 12.9 11.3 12.8C6.4 12.4 2.6 8.6 2.2 3.7C2.1 3 2.7 2.4 3.4 2.4Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+  }
+  function iconLink(){
+    return '<svg width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M5 3H3.5C2.67 3 2 3.67 2 4.5V8.5C2 9.33 2.67 10 3.5 10H7.5C8.33 10 9 9.33 9 8.5V7M7 2H10V5M10 2L5.5 6.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  }
+
+  function escapeHtml(s){
+    return (s||'').replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+
+  function matchesFilter(id){
+    var entry = getEntry(id);
+    if(currentFilter === 'done' && !entry.called) return false;
+    if(currentFilter === 'pending' && entry.called) return false;
+    if(currentSearch){
+      var name = STUDIOS[id-1][0].toLowerCase();
+      if(name.indexOf(currentSearch) === -1) return false;
+    }
+    return true;
+  }
+
+  function renderList(){
+    var html = '';
+    var shown = 0;
+    for(var i=1;i<=STUDIOS.length;i++){
+      if(!matchesFilter(i)) continue;
+      shown++;
+      var name = STUDIOS[i-1][0], site = STUDIOS[i-1][1];
+      var entry = getEntry(i);
+      var siteUrl = site.indexOf('http') === 0 ? site : 'https://' + site;
+      var commentPreview = entry.comment ? escapeHtml(entry.comment).slice(0,220) : 'Добавить комментарий';
+      html += ''+
+      '<div class="card '+(entry.called?'done':'')+'" data-id="'+i+'">'+
+        '<div class="card-top">'+
+          '<div>'+
+            '<div class="card-id">СТУДИЯ №'+i+'</div>'+
+            '<div class="card-name">'+escapeHtml(name)+'</div>'+
+            '<a class="card-site" href="'+siteUrl+'" target="_blank" rel="noopener">'+
+              iconLink()+' '+escapeHtml(site)+
+            '</a>'+
+          '</div>'+
+          '<button class="check-btn '+(entry.called?'checked':'')+'" data-action="toggle-called" aria-label="Дозвонились">'+iconCheck()+'</button>'+
+        '</div>'+
+        '<div class="divider"></div>'+
+        '<span class="field-label">Имя дизайнера</span>'+
+        '<div class="field-row">'+
+          '<input class="field-input" data-field="designerName" type="text" placeholder="Как зовут контактное лицо" value="'+escapeHtml(entry.designerName)+'">'+
+        '</div>'+
+        '<span class="field-label">Телефон</span>'+
+        '<div class="field-row">'+
+          '<input class="field-input" data-field="phone" type="tel" inputmode="tel" placeholder="Вставьте номер телефона" value="'+escapeHtml(entry.phone)+'">'+
+          '<button class="go-btn call-btn '+(entry.phone?'enabled':'')+'" data-action="call" data-field="phone" '+(entry.phone?'':'disabled')+'>'+iconPhone()+'</button>'+
+        '</div>'+
+        '<span class="field-label">Instagram</span>'+
+        '<div class="field-row">'+
+          '<input class="field-input" data-field="instagram" type="text" inputmode="url" placeholder="Вставьте ссылку на профиль" value="'+escapeHtml(entry.instagram)+'">'+
+          '<button class="go-btn '+(entry.instagram?'enabled':'')+'" data-action="open" data-field="instagram" '+(entry.instagram?'':'disabled')+'>'+iconGo()+'</button>'+
+        '</div>'+
+        '<span class="field-label">Messenger (WhatsApp / Telegram / VK)</span>'+
+        '<div class="field-row">'+
+          '<input class="field-input" data-field="messenger" type="text" inputmode="url" placeholder="Вставьте ссылку для перехода" value="'+escapeHtml(entry.messenger || TG_PREFIX)+'">'+
+          '<button class="go-btn '+(entry.messenger?'enabled':'')+'" data-action="open" data-field="messenger" '+(entry.messenger?'':'disabled')+'>'+iconGo()+'</button>'+
+        '</div>'+
+        '<div class="save-row">'+
+          '<span class="save-hint">Сохранено ✓</span>'+
+          '<button class="save-btn" data-action="save-fields">Сохранить</button>'+
+        '</div>'+
+        '<button class="comment-open" data-action="open-comment">'+
+          '<span class="comment-icon '+(entry.comment?'has':'')+'">'+iconChat()+'</span>'+
+          '<span class="comment-preview '+(entry.comment?'':'empty')+'">'+commentPreview+'</span>'+
+          iconChevron()+
+        '</button>'+
+      '</div>';
+    }
+    if(shown === 0){
+      html = '<div class="empty-state">Ничего не найдено</div>';
+    }
+    listEl.innerHTML = html;
+  }
+
+  // ---------------- Events ----------------
+  listEl.addEventListener('click', async function(e){
+    var card = e.target.closest('.card');
+    if(!card) return;
+    var id = card.getAttribute('data-id');
+
+    var toggleBtn = e.target.closest('[data-action="toggle-called"]');
+    if(toggleBtn){
+      var willBeChecked = !toggleBtn.classList.contains('checked');
+      toggleBtn.classList.toggle('checked');
+      card.classList.toggle('done');
+      try{
+        await saveEntry(id, {called: willBeChecked});
+        updateProgress();
+        showToast(willBeChecked ? 'Отмечено: дозвонились' : 'Отметка снята');
+      }catch(err){
+        toggleBtn.classList.toggle('checked');
+        card.classList.toggle('done');
+        showToast('Не сохранилось. Попробуйте ещё раз через пару секунд.', 4000);
+      }
+      return;
+    }
+
+    var goBtn = e.target.closest('[data-action="open"]');
+    if(goBtn && !goBtn.disabled){
+      var field = goBtn.getAttribute('data-field');
+      var input = card.querySelector('[data-field="'+field+'"]');
+      var val = input.value.trim();
+      if(val){
+        var url = val.indexOf('http') === 0 ? val : 'https://' + val;
+        window.open(url, '_blank');
+      }
+      return;
+    }
+
+    var callBtn = e.target.closest('[data-action="call"]');
+    if(callBtn && !callBtn.disabled){
+      var phoneInput = card.querySelector('[data-field="phone"]');
+      var rawPhone = phoneInput.value.trim();
+      if(rawPhone){
+        var dialable = rawPhone.replace(/[^\d+]/g, '');
+        window.location.href = 'tel:' + dialable;
+      }
+      return;
+    }
+
+    var saveBtn = e.target.closest('[data-action="save-fields"]');
+    if(saveBtn){
+      var nameVal = card.querySelector('[data-field="designerName"]').value.trim();
+      var phoneVal = card.querySelector('[data-field="phone"]').value.trim();
+      var instaVal = card.querySelector('[data-field="instagram"]').value.trim();
+      var msgVal = card.querySelector('[data-field="messenger"]').value.trim();
+      if(msgVal === TG_PREFIX || msgVal === TG_PREFIX.replace(/\/$/, '')) msgVal = '';
+      saveBtn.disabled = true;
+      var origText = saveBtn.textContent;
+      saveBtn.textContent = 'Сохраняю…';
+      try{
+        await saveEntry(id, {designerName: nameVal, phone: phoneVal, instagram: instaVal, messenger: msgVal});
+        var hint = card.querySelector('.save-hint');
+        hint.classList.add('show');
+        setTimeout(function(){ hint.classList.remove('show'); }, 1800);
+        // refresh go-button enabled states without full re-render (keep focus/typing intact)
+        var phGo = card.querySelector('[data-field="phone"]').closest('.field-row').querySelector('.go-btn');
+        var igGo = card.querySelector('[data-field="instagram"]').closest('.field-row').querySelector('.go-btn');
+        var msGo = card.querySelector('[data-field="messenger"]').closest('.field-row').querySelector('.go-btn');
+        phGo.disabled = !phoneVal; phGo.classList.toggle('enabled', !!phoneVal);
+        igGo.disabled = !instaVal; igGo.classList.toggle('enabled', !!instaVal);
+        msGo.disabled = !msgVal; msGo.classList.toggle('enabled', !!msgVal);
+        showToast('Сохранено');
+      }catch(err){
+        showToast('Не сохранилось. Попробуйте ещё раз через пару секунд.', 4000);
+      }
+      saveBtn.disabled = false;
+      saveBtn.textContent = origText;
+      return;
+    }
+
+    var commentBtn = e.target.closest('[data-action="open-comment"]');
+    if(commentBtn){
+      openCommentModal(id);
+      return;
+    }
+  });
+
+  document.getElementById('searchInput').addEventListener('input', function(e){
+    currentSearch = e.target.value.trim().toLowerCase();
+    renderList();
+  });
+
+  listEl.addEventListener('focusin', function(e){
+    var input = e.target.closest('[data-field="messenger"]');
+    if(input){
+      var len = input.value.length;
+      setTimeout(function(){ input.setSelectionRange(len, len); }, 0);
+    }
+  });
+
+  document.querySelectorAll('.pill').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.pill').forEach(function(p){ p.classList.remove('active'); });
+      btn.classList.add('active');
+      currentFilter = btn.getAttribute('data-filter');
+      renderList();
+    });
+  });
+
+  // ---------------- Comment modal ----------------
+  var overlay = document.getElementById('modalOverlay');
+  var modalTextarea = document.getElementById('modalTextarea');
+  var modalSub = document.getElementById('modalSub');
+  var modalStatus = document.getElementById('modalStatus');
+  var modalSaveBtn = document.getElementById('modalSave');
+
+  function openCommentModal(id){
+    activeModalId = id;
+    var name = STUDIOS[id-1][0];
+    modalSub.textContent = name;
+    modalTextarea.value = getEntry(id).comment || '';
+    overlay.classList.add('open');
+    setTimeout(function(){ modalTextarea.focus(); }, 250);
+  }
+  function closeCommentModal(){
+    overlay.classList.remove('open');
+    activeModalId = null;
+  }
+  document.getElementById('modalClose').addEventListener('click', closeCommentModal);
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) closeCommentModal(); });
+
+  modalSaveBtn.addEventListener('click', async function(){
+    if(!activeModalId) return;
+    var text = modalTextarea.value;
+    modalSaveBtn.disabled = true;
+    var orig = modalSaveBtn.textContent;
+    modalSaveBtn.textContent = 'Сохраняю…';
+    try{
+      await saveEntry(activeModalId, {comment: text});
+      modalStatus.classList.add('show');
+      showToast('Комментарий сохранён');
+      setTimeout(function(){
+        modalStatus.classList.remove('show');
+        closeCommentModal();
+        renderList();
+      }, 550);
+    }catch(err){
+      showToast('Не сохранилось. Попробуйте ещё раз через пару секунд.', 4000);
+    }
+    modalSaveBtn.disabled = false;
+    modalSaveBtn.textContent = orig;
+  });
+
+  // ---------------- Toast ----------------
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+  function showToast(msg, duration){
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('show'); }, duration || 1700);
+  }
+
+  document.getElementById('reportBtn').addEventListener('click', function(){
+    var lines = [];
+    var doneCount = 0;
+    for(var i=1;i<=STUDIOS.length;i++){
+      var e = state[i];
+      if(!e) continue;
+      var hasData = e.called || e.designerName || e.phone || e.instagram ||
+                    (e.messenger && e.messenger !== TG_PREFIX) || e.comment;
+      if(!hasData) continue;
+      if(e.called) doneCount++;
+      var block = (e.called ? '✅ ' : '▫️ ') + STUDIOS[i-1][0];
+      if(e.designerName) block += '\nИмя: ' + e.designerName;
+      if(e.phone) block += '\nТел: ' + e.phone;
+      if(e.instagram) block += '\nInstagram: ' + e.instagram;
+      if(e.messenger && e.messenger !== TG_PREFIX) block += '\nMessenger: ' + e.messenger;
+      if(e.comment) block += '\nКомментарий: ' + e.comment;
+      lines.push(block);
+    }
+
+    if(lines.length === 0){
+      showToast('Пока нечего отправлять — заполните хотя бы одну студию', 3500);
+      return;
+    }
+
+    var header = 'ОТЧЁТ ПО ОБЗВОНУ — StudioXDesign\n' +
+                 'Обзвонено: ' + doneCount + ' из ' + STUDIOS.length + '\n' +
+                 'Дата: ' + new Date().toLocaleDateString('ru-RU') + '\n\n';
+    var text = header + lines.join('\n\n');
+
+    if(navigator.share){
+      navigator.share({title:'Отчёт по обзвону', text:text}).catch(function(){});
+    }else if(navigator.clipboard){
+      navigator.clipboard.writeText(text).then(function(){
+        showToast('Отчёт скопирован — вставьте в WhatsApp или Telegram', 4000);
+      }).catch(function(){
+        showToast('Не удалось скопировать отчёт', 3000);
+      });
+    }else{
+      showToast('Не удалось подготовить отчёт на этом устройстве', 3000);
+    }
+  });
+
+  // ---------------- Init ----------------
+  (async function init(){
+    await loadState();
+    renderList();
+    updateProgress();
+  })();
+
+})();
+</script>
+</body>
+</html>
